@@ -1,0 +1,601 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Daily Expense & Budget Tracker — frontend-only personal finance dashboard."
+    />
+    <title>Daily Expense & Budget Tracker</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <script>
+      if (localStorage.getItem("dbt_session"))
+        document.documentElement.classList.add("has-session");
+    </script>
+    <link rel="stylesheet" href="styles.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  </head>
+  <body>
+    <div class="auth" id="auth">
+      <section class="auth-art">
+        <div class="auth-brand">
+          <div class="brand-mark">₱</div>
+          <strong>DailyBudget</strong>
+        </div>
+        <div class="coin-stack"><i></i><i></i><i></i><i></i></div>
+        <h2>Know where every peso goes.</h2>
+        <p>
+          Log your spending, set limits, and see your habits in clear charts.
+        </p>
+        <ul>
+          <li>Budgets that warn you before you overspend</li>
+          <li>Charts for every day, week, and category</li>
+          <li>Your data stays on this device</li>
+        </ul>
+      </section>
+      <section class="auth-card">
+        <div class="tabs">
+          <button type="button" class="tab active" data-tab="login">
+            Log in</button
+          ><button type="button" class="tab" data-tab="signup">Sign up</button>
+        </div>
+        <form id="loginForm" novalidate>
+          <h3>Welcome back</h3>
+          <p class="muted">Log in to continue tracking.</p>
+          <label
+            >Email<input
+              id="liEmail"
+              type="email"
+              autocomplete="email"
+              placeholder="you@email.com"
+          /></label>
+          <label
+            >Password
+            <div class="pw">
+              <input
+                id="liPass"
+                type="password"
+                autocomplete="current-password"
+                placeholder="Your password"
+              /><button type="button" class="eye" data-for="liPass">
+                Show
+              </button>
+            </div></label
+          >
+          <div class="forgot-row">
+            <a href="#" data-tab="forgot">Forgot password?</a>
+          </div>
+          <div class="auth-notice" id="loginNotice" role="status"></div>
+          <div class="auth-error" id="loginError" role="alert"></div>
+          <button class="primary-btn wide">Log in</button>
+          <p class="switch">
+            New here? <a href="#" data-tab="signup">Create an account</a>
+          </p>
+        </form>
+        <form id="signupForm" novalidate hidden>
+          <h3>Create your account</h3>
+          <p class="muted">Start tracking in under a minute.</p>
+          <label
+            >Full name<input
+              id="suName"
+              autocomplete="name"
+              placeholder="Juan Dela Cruz"
+          /></label>
+          <label
+            >Email<input
+              id="suEmail"
+              type="email"
+              autocomplete="email"
+              placeholder="you@email.com"
+          /></label>
+          <label
+            >Password
+            <div class="pw">
+              <input
+                id="suPass"
+                type="password"
+                autocomplete="new-password"
+                placeholder="At least 6 characters"
+              /><button type="button" class="eye" data-for="suPass">
+                Show
+              </button>
+            </div></label
+          >
+          <div class="strength"><i id="strBar"></i></div>
+          <small id="strText" class="hint"
+            >Use letters, numbers, and symbols for a stronger password.</small
+          >
+          <label
+            >Confirm password
+            <div class="pw">
+              <input
+                id="suPass2"
+                type="password"
+                autocomplete="new-password"
+                placeholder="Repeat password"
+              /><button type="button" class="eye" data-for="suPass2"></button>
+            </div></label
+          >
+          <div class="auth-error" id="signupError" role="alert"></div>
+          <button class="primary-btn wide">Create account</button>
+          <p class="switch">
+            Already registered? <a href="#" data-tab="login">Log in</a>
+          </p>
+        </form>
+        <form id="forgotForm" novalidate hidden>
+          <h3>Reset your password</h3>
+          <p class="muted">Enter your account email and choose a new password.</p>
+          <label
+            >Email<input
+              id="fpEmail"
+              type="email"
+              autocomplete="email"
+              placeholder="you@email.com"
+          /></label>
+          <label
+            >New password
+            <div class="pw">
+              <input
+                id="fpPass"
+                type="password"
+                autocomplete="new-password"
+                placeholder="At least 6 characters"
+              /><button type="button" class="eye" data-for="fpPass">
+                Show
+              </button>
+            </div></label
+          >
+          <label
+            >Confirm new password
+            <div class="pw">
+              <input
+                id="fpPass2"
+                type="password"
+                autocomplete="new-password"
+                placeholder="Repeat password"
+              /><button type="button" class="eye" data-for="fpPass2"></button>
+            </div></label
+          >
+          <div class="auth-error" id="forgotError" role="alert"></div>
+          <button class="primary-btn wide">Reset password</button>
+          <p class="switch">
+            <a href="#" data-tab="login">← Back to log in</a>
+          </p>
+        </form>
+      </section>
+    </div>
+    <div class="app-shell">
+      <aside class="sidebar" id="sidebar">
+        <div class="brand">
+          <div class="brand-mark">₱</div>
+          <div>
+            <strong>DailyBudget</strong>
+            <span>Expense Tracker</span>
+          </div>
+        </div>
+
+        <nav class="nav">
+          <button class="nav-item active" data-view="dashboard">
+            <span>⌂</span> Dashboard
+          </button>
+          <button class="nav-item" data-view="transactions">
+            <span>↔</span> Transactions
+          </button>
+          <button class="nav-item" data-view="analytics">
+            <span>◔</span> Analytics
+          </button>
+          <button class="nav-item" data-view="budget">
+            <span>◎</span> Budget
+          </button>
+          <button class="nav-item" data-view="history">
+            <span>▣</span> History
+          </button>
+          <button class="nav-item" data-view="profile"><span>☺</span> Profile</button>
+        </nav>
+
+        <div class="sidebar-bottom">
+          <div class="user-card">
+            <button class="avatar" id="sbAvatar" data-view="profile" title="My profile" aria-label="My profile"></button>
+            <div class="who">
+              <b id="sbName"></b><small id="sbEmail"></small>
+            </div>
+            <button id="logoutBtn" title="Log out" aria-label="Log out">
+              ⎋
+            </button>
+          </div>
+        </div>
+      </aside>
+
+      <main class="main">
+        <header class="topbar">
+          <button class="menu-btn" id="menuBtn">☰</button>
+          <div>
+            <p class="eyebrow" id="dateLabel"></p>
+            <h1 id="pageTitle"></h1>
+          </div>
+          <div class="top-actions">
+            <button class="icon-btn" id="quickAdd">
+              ＋ Add Transaction
+            </button>
+            <button class="secondary-btn" id="logoutTop">Log out</button>
+            <button class="avatar" id="topAvatar" data-view="profile" title="My profile" aria-label="My profile"></button>
+          </div>
+        </header>
+
+        <section class="view active" id="dashboardView">
+          <div class="hero-row">
+            <div>
+              <p class="eyebrow">YOUR FINANCIAL SNAPSHOT</p>
+              <h2>Stay aware. Spend intentionally.</h2>
+              <p class="muted">
+                A simple place to track daily income, expenses, budgets, and
+                spending habits.
+              </p>
+            </div>
+            <button class="primary-btn" id="heroAdd">＋ Add transaction</button>
+          </div>
+
+          <div class="stats-grid">
+            <article class="stat-card balance">
+              <div class="stat-top">
+                <span>Total balance</span><span class="stat-icon">₱</span>
+              </div>
+              <strong id="balanceValue">₱0.00</strong>
+              <small id="balanceNote">Available after expenses</small>
+            </article>
+            <article class="stat-card income">
+              <div class="stat-top">
+                <span>Total income</span><span class="stat-icon">↗</span>
+              </div>
+              <strong id="incomeValue">₱0.00</strong>
+              <small>This month</small>
+            </article>
+            <article class="stat-card expense">
+              <div class="stat-top">
+                <span>Total expenses</span><span class="stat-icon">↘</span>
+              </div>
+              <strong id="expenseValue">₱0.00</strong>
+              <small>This month</small>
+            </article>
+            <article class="stat-card budget-stat">
+              <div class="stat-top">
+                <span>Budget left</span><span class="stat-icon">◎</span>
+              </div>
+              <strong id="budgetLeftValue">₱0.00</strong>
+              <small id="budgetNote">Across all budgets</small>
+            </article>
+          </div>
+
+          <div class="content-grid">
+            <article class="panel chart-panel">
+              <div class="panel-head">
+                <div>
+                  <span class="panel-kicker">SPENDING OVERVIEW</span>
+                  <h3>Income vs. expenses</h3>
+                </div>
+                <select id="chartPeriod">
+                  <option value="week">Last 7 days</option>
+                  <option value="month" selected>This month</option>
+                </select>
+              </div>
+              <div class="chart-wrap"><canvas id="overviewChart"></canvas></div>
+            </article>
+
+            <article class="panel budget-panel">
+              <div class="panel-head">
+                <div>
+                  <span class="panel-kicker">BUDGET CONTROL</span>
+                  <h3>Monthly progress</h3>
+                </div>
+                <button class="text-btn" data-view="budget">Manage →</button>
+              </div>
+              <div id="budgetProgressList"></div>
+            </article>
+          </div>
+
+          <div class="content-grid lower">
+            <article class="panel">
+              <div class="panel-head">
+                <div>
+                  <span class="panel-kicker">RECENT ACTIVITY</span>
+                  <h3>Latest transactions</h3>
+                </div>
+                <button class="text-btn" data-view="transactions">
+                  View all →
+                </button>
+              </div>
+              <div id="recentTransactions" class="transaction-list"></div>
+            </article>
+
+            <article class="panel category-panel">
+              <div class="panel-head">
+                <div>
+                  <span class="panel-kicker">WHERE IT GOES</span>
+                  <h3>Top spending categories</h3>
+                </div>
+              </div>
+              <div class="category-chart-wrap">
+                <canvas id="categoryChart"></canvas>
+              </div>
+              <div id="categoryLegend" class="legend"></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="view" id="transactionsView">
+          <div class="page-heading">
+            <div>
+              <span class="eyebrow">02 / TRANSACTIONS</span>
+              <h2>All transactions</h2>
+              <p class="muted">
+                Add, edit, delete, search, and filter your financial activity.
+              </p>
+            </div>
+            <button class="primary-btn" id="transactionAdd">
+              ＋ Add transaction
+            </button>
+          </div>
+          <article class="panel">
+            <div class="filters">
+              <div class="search-box">
+                ⌕
+                <input id="searchInput" placeholder="Search transactions..." />
+              </div>
+              <select id="typeFilter">
+                <option value="all">All types</option>
+                <option value="income">Income</option>
+                <option value="expense">Expense</option>
+              </select>
+              <select id="categoryFilter">
+                <option value="all">All categories</option>
+              </select>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Transaction</th>
+                    <th>Category</th>
+                    <th>Date</th>
+                    <th>Type</th>
+                    <th>Amount</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody id="transactionTable"></tbody>
+              </table>
+            </div>
+          </article>
+        </section>
+
+        <section class="view" id="analyticsView">
+          <div class="page-heading">
+            <div>
+              <span class="eyebrow">03 / ANALYTICS</span>
+              <h2>Understand your spending</h2>
+              <p class="muted">
+                See patterns in your income, expenses, and categories.
+              </p>
+            </div>
+          </div>
+          <div class="stats-grid mini">
+            <article class="stat-card">
+              <div class="stat-top">
+                <span>Savings rate</span><span class="stat-icon">%</span>
+              </div>
+              <strong id="savingsRate">0%</strong
+              ><small>Income kept after expenses</small>
+            </article>
+            <article class="stat-card">
+              <div class="stat-top">
+                <span>Largest category</span><span class="stat-icon">↗</span>
+              </div>
+              <strong id="largestCategory">—</strong
+              ><small>Highest expense category</small>
+            </article>
+            <article class="stat-card">
+              <div class="stat-top">
+                <span>Transactions</span><span class="stat-icon">#</span>
+              </div>
+              <strong id="transactionCount">0</strong
+              ><small>Recorded entries</small>
+            </article>
+          </div>
+          <div class="content-grid">
+            <article class="panel">
+              <div class="panel-head">
+                <div>
+                  <span class="panel-kicker">TREND</span>
+                  <h3>Cash flow</h3>
+                </div>
+              </div>
+              <div class="large-chart">
+                <canvas id="analyticsChart"></canvas>
+              </div>
+            </article>
+            <article class="panel">
+              <div class="panel-head">
+                <div>
+                  <span class="panel-kicker">BREAKDOWN</span>
+                  <h3>Expense categories</h3>
+                </div>
+              </div>
+              <div class="large-chart">
+                <canvas id="analyticsCategoryChart"></canvas>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <section class="view" id="budgetView">
+          <div class="page-heading">
+            <div>
+              <span class="eyebrow">04 / BUDGET</span>
+              <h2>Plan before you spend</h2>
+              <p class="muted">
+                Set limits and monitor how close you are to them.
+              </p>
+            </div>
+            <button class="primary-btn" id="budgetAdd">＋ Add budget</button>
+          </div>
+          <div id="budgetCards" class="budget-cards"></div>
+        </section>
+
+        <section class="view" id="historyView">
+          <div class="page-heading">
+            <div>
+              <span class="eyebrow">05 / HISTORY</span>
+              <h2>Financial history</h2>
+              <p class="muted">
+                Previous transactions and monthly summaries live here.
+              </p>
+            </div>
+          </div>
+          <div id="historyCards" class="history-grid"></div>
+        </section>
+
+        <section class="view" id="profileView">
+          <div class="page-heading">
+            <div>
+              <h2>My profile</h2>
+              <p class="muted">Your account details and activity.</p>
+            </div>
+          </div>
+          <div class="profile-grid">
+            <article class="panel profile-card">
+              <div class="avatar big" id="pfAvatar"></div>
+              <h3 id="pfName"></h3>
+              <p class="muted" id="pfEmail"></p>
+              <div class="profile-rows">
+                <div><span>Member since</span><b id="pfSince"></b></div>
+                <div><span>Transactions</span><b id="pfTx"></b></div>
+                <div><span>Budgets</span><b id="pfBudgets"></b></div>
+                <div><span>Balance</span><b id="pfBalance"></b></div>
+              </div>
+              <button class="secondary-btn danger wide" id="logoutProfile">Log out</button>
+            </article>
+            <div class="profile-forms">
+              <form class="panel" id="nameForm" novalidate>
+                <h3>Edit name</h3>
+                <label>Full name<input id="pfNameInput" autocomplete="name" /></label>
+                <div class="auth-error" id="nameMsg" role="alert"></div>
+                <button class="primary-btn">Save name</button>
+              </form>
+              <form class="panel" id="pwForm" novalidate>
+                <h3>Change password</h3>
+                <label>Current password
+                  <div class="pw">
+                    <input id="pwOld" type="password" autocomplete="current-password" /><button type="button" class="eye" data-for="pwOld">Show</button>
+                  </div>
+                </label>
+                <label>New password
+                  <div class="pw">
+                    <input id="pwNew" type="password" autocomplete="new-password" placeholder="At least 6 characters" /><button type="button" class="eye" data-for="pwNew">Show</button>
+                  </div>
+                </label>
+                <label>Confirm new password
+                  <div class="pw">
+                    <input id="pwNew2" type="password" autocomplete="new-password" /><button type="button" class="eye" data-for="pwNew2">Show</button>
+                  </div>
+                </label>
+                <div class="auth-error" id="pwMsg" role="alert"></div>
+                <button class="primary-btn">Update password</button>
+              </form>
+            </div>
+          </div>
+        </section>
+
+        <footer class="footer">
+          Daily Expense & Budget Tracker <span>•</span> Frontend-only • Local
+          Storage
+        </footer>
+      </main>
+    </div>
+
+    <div class="modal-backdrop" id="transactionModal">
+      <form class="modal" id="transactionForm">
+        <div class="modal-head">
+          <div>
+            <span class="panel-kicker">TRANSACTION</span>
+            <h3 id="modalTitle">Add transaction</h3>
+          </div>
+          <button type="button" class="close-btn" data-close>×</button>
+        </div>
+        <input type="hidden" id="editId" />
+        <div class="form-grid">
+          <label
+            >Description<input
+              id="description"
+              required
+              placeholder="e.g. Lunch at cafeteria"
+          /></label>
+          <label
+            >Amount<input
+              id="amount"
+              type="number"
+              min="0.01"
+              step="0.01"
+              required
+              placeholder="0.00"
+          /></label>
+          <label
+            >Type<select id="transactionType">
+              <option value="expense">Expense</option>
+              <option value="income">Income</option>
+            </select></label
+          >
+          <label>Category<select id="transactionCategory"></select></label>
+          <label>Date<input id="transactionDate" type="date" required /></label>
+          <label
+            >Note<input id="transactionNote" placeholder="Optional note"
+          /></label>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="secondary-btn" data-close>Cancel</button
+          ><button class="primary-btn" type="submit">Save transaction</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="modal-backdrop" id="budgetModal">
+      <form class="modal small-modal" id="budgetForm">
+        <div class="modal-head">
+          <div>
+            <span class="panel-kicker">BUDGET</span>
+            <h3>Add budget</h3>
+          </div>
+          <button type="button" class="close-btn" data-close-budget>×</button>
+        </div>
+        <label>Category<select id="budgetCategory"></select></label>
+        <label
+          >Monthly limit<input
+            id="budgetAmount"
+            type="number"
+            min="1"
+            step="0.01"
+            required
+            placeholder="e.g. 5000"
+        /></label>
+        <div class="modal-actions">
+          <button type="button" class="secondary-btn" data-close-budget>
+            Cancel</button
+          ><button class="primary-btn">Save budget</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="toast" id="toast"></div>
+    <script src="data.js"></script>
+    <script src="utils.js"></script>
+    <script src="charts.js"></script>
+    <script src="views.js"></script>
+    <script src="auth.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>
